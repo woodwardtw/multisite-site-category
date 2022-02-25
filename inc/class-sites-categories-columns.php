@@ -33,7 +33,7 @@ class B5F_Sites_Categories_Columns
             && 'sites.php' == $pagenow
             && isset( $_GET['orderby'] ) && 'site-category' == $_GET['orderby'] 
         ) 
-            add_filter( 'query', array( $this, 'filter_site_query' ) );
+            add_action( 'pre_get_posts', 'filter_site_query' );
 
     }
 
@@ -112,23 +112,15 @@ class B5F_Sites_Categories_Columns
      */
     public function filter_site_query( $query )
     {
-        global $wpdb;
-        $search_query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '1'  LIMIT 0, 20";
-        
-        # SANITIZE
-        if( isset( $_GET['order'] ) )
-        {
-            $order = ( 'asc' == $_GET['order'] ) ? 'ASC' : 'DESC';
-        }
-        else
-            $order = 'DESC';
+        if( ! is_admin() )
+        return;
 
-        # MODIFY
-        if( strpos( $query, $search_query ) !== FALSE )
-        {
-            $query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '1'  ORDER BY mature $order LIMIT 0, 20";
+        $orderby = $query->get('orderby');
+
+        if( 'column-site-cat' == $orderby ) {
+            $query->set('meta_key','column-site-cat');
+            $query->set('orderby','meta_value');
         }
-        return $query;
     }
 
     
